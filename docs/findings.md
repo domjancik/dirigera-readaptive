@@ -154,6 +154,9 @@ Verified against `Computed schedule`
   `10%` overnight for the standard profile, `2700K` in the morning, `4600K`
   around solar noon, about `2450K` before sunset, `2200K` at pre-sleep, and
   `1000K` at sleep.
+- Brightness now uses a middle-ground evening curve: it keeps the gradual
+  afternoon decline but targets roughly 60% of the previous generated evening
+  intensity instead of holding the high IKEA-like brightness plateau.
 
 ## Remaining Uncertainties
 

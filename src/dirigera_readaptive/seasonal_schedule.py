@@ -32,8 +32,8 @@ class CurveConfig:
     min_evening_ramp_hours: float = 1.5
     min_light_level: int = 10
     morning_light_level: int = 90
-    evening_light_level: int = 90
-    pre_sleep_light_level: int = 80
+    evening_light_level: int = 55
+    pre_sleep_light_level: int = 50
     max_light_level: int = 100
     warm_color_temperature: int = 1000
     morning_color_temperature: int = 2700

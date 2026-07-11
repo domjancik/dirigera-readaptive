@@ -44,8 +44,8 @@ schedule_updates:
         min_light_level: 4
         morning_light_level: 70
         max_light_level: 85
-        evening_light_level: 75
-        pre_sleep_light_level: 65
+        evening_light_level: 47
+        pre_sleep_light_level: 42
 ```
 
 ## Services

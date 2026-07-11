@@ -110,6 +110,10 @@
   temperature are separate curves, temperature transitions follow the existing
   summer profiles more closely, and the evening falloff is smoother pending an
   actual evening comfort test.
+- Adjusted the emitted brightness curve again after evening inspection: color
+  transitions stay IKEA-like, but standard evening brightness now lands around
+  `55` near sunset warmup, `52` around 21:00, and `50` at pre-sleep instead of
+  staying near `80-90`.
 - Created a second hub profile from `schedules/computed-dim.generated.yaml`:
   `Computed schedule dimmed`
   `8439ba57-ac80-4905-86c5-2acee72d26c5`.

@@ -74,14 +74,26 @@ def test_temperature_curve_uses_smoother_ikea_like_summer_anchors():
     assert schedule_entry_at(23.0, times, config)["colorTemperature"] == 1000
 
 
-def test_evening_brightness_smoothly_tapers_instead_of_post_sunset_spike():
+def test_evening_brightness_tapers_gradually_into_a_middle_ground():
     times = SunTimes(nautical_sunrise=3.0, sunrise=5.0, solar_noon=13.0, sunset=21.25)
     config = CurveConfig(sleep_time=21.0, extend_day_after_late_sunset=True)
 
-    assert schedule_entry_at(20.25, times, config)["lightLevel"] == 90
-    assert schedule_entry_at(21.5, times, config)["lightLevel"] == 80
-    assert schedule_entry_at(22.0, times, config)["lightLevel"] < 80
+    assert 50 <= schedule_entry_at(20.25, times, config)["lightLevel"] <= 60
+    assert 45 <= schedule_entry_at(21.5, times, config)["lightLevel"] <= 55
+    assert schedule_entry_at(22.0, times, config)["lightLevel"] < 50
     assert schedule_entry_at(23.0, times, config)["lightLevel"] == 10
+
+
+def test_prague_summer_evening_is_already_around_two_thirds_brightness():
+    times = sun_times_for_date(
+        date(2026, 7, 11),
+        latitude=50.1,
+        longitude=14.5,
+        timezone_name="Europe/Prague",
+    )
+    config = CurveConfig(sleep_time=21.0, extend_day_after_late_sunset=True)
+
+    assert 50 <= schedule_entry_at(21.0, times, config)["lightLevel"] <= 58
 
 
 def test_optional_day_extension_moves_sleep_later_for_late_sunset():

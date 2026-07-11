@@ -96,64 +96,64 @@ adaptiveSchedule:
   lightLevel: 85
   colorTemperature: 4586
 - startTime: '14:00'
-  lightLevel: 85
+  lightLevel: 84
   colorTemperature: 4520
 - startTime: '14:30'
-  lightLevel: 84
+  lightLevel: 82
   colorTemperature: 4406
 - startTime: '15:00'
-  lightLevel: 83
+  lightLevel: 79
   colorTemperature: 4247
 - startTime: '15:30'
-  lightLevel: 82
+  lightLevel: 75
   colorTemperature: 4053
 - startTime: '16:00'
-  lightLevel: 81
+  lightLevel: 71
   colorTemperature: 3833
 - startTime: '16:30'
-  lightLevel: 80
+  lightLevel: 67
   colorTemperature: 3597
 - startTime: '17:00'
-  lightLevel: 79
+  lightLevel: 63
   colorTemperature: 3358
 - startTime: '17:30'
-  lightLevel: 78
+  lightLevel: 59
   colorTemperature: 3127
 - startTime: '18:00'
-  lightLevel: 77
+  lightLevel: 55
   colorTemperature: 2915
 - startTime: '18:30'
-  lightLevel: 76
+  lightLevel: 52
   colorTemperature: 2734
 - startTime: '19:00'
-  lightLevel: 76
+  lightLevel: 50
   colorTemperature: 2593
 - startTime: '19:30'
-  lightLevel: 75
+  lightLevel: 48
   colorTemperature: 2497
 - startTime: '20:00'
-  lightLevel: 75
+  lightLevel: 47
   colorTemperature: 2453
 - startTime: '20:10'
-  lightLevel: 75
+  lightLevel: 47
   colorTemperature: 2450
 - startTime: '20:30'
-  lightLevel: 74
+  lightLevel: 46
   colorTemperature: 2413
 - startTime: '21:00'
-  lightLevel: 68
+  lightLevel: 44
   colorTemperature: 2277
 - startTime: '21:10'
-  lightLevel: 66
+  lightLevel: 43
   colorTemperature: 2237
 - startTime: '21:30'
-  lightLevel: 65
+  lightLevel: 42
   colorTemperature: 2200
 - startTime: '22:00'
-  lightLevel: 50
+  lightLevel: 32
   colorTemperature: 1900
 - startTime: '22:30'
-  lightLevel: 19
+  lightLevel: 14
   colorTemperature: 1300
 - startTime: '23:00'
   lightLevel: 4
