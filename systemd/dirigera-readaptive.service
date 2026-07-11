@@ -1,0 +1,17 @@
+[Unit]
+Description=DIRIGERA native Adaptive reconnect recovery
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=dirigera
+Group=dirigera
+WorkingDirectory=/opt/dirigera-readaptive
+Environment=PYTHONPATH=/opt/dirigera-readaptive/src
+ExecStart=/usr/bin/python3 -m dirigera_readaptive.cli --config /opt/dirigera-readaptive/config.yaml
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

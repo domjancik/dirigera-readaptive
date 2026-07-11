@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SERVICE="${DIRIGERA_SCHEDULE_SERVICE:-dirigera-computed-schedule.service}"
+
+echo "Starting $SERVICE..."
+sudo systemctl start "$SERVICE"
+
+echo
+systemctl status "$SERVICE" --no-pager
+
+echo
+echo "Recent update log:"
+journalctl -u "$SERVICE" -n 80 --no-pager

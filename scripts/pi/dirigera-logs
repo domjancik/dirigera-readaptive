@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -u
+
+LINES=120
+FOLLOW=0
+UNITS=(
+  dirigera-readaptive.service
+  dirigera-computed-schedule.service
+)
+
+usage() {
+  cat <<'USAGE'
+Usage: dirigera-logs [-f] [-n LINES] [unit...]
+
+Examples:
+  dirigera-logs
+  dirigera-logs -f
+  dirigera-logs -n 300 dirigera-computed-schedule.service
+USAGE
+}
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -f|--follow)
+      FOLLOW=1
+      shift
+      ;;
+    -n|--lines)
+      LINES="$2"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      UNITS=("$@")
+      break
+      ;;
+  esac
+done
+
+args=(--no-pager -n "$LINES")
+if [ "$FOLLOW" -eq 1 ]; then
+  args=(-f -n "$LINES")
+fi
+
+for unit in "${UNITS[@]}"; do
+  args+=(-u "$unit")
+done
+
+journalctl "${args[@]}"

@@ -1,0 +1,20 @@
+[project]
+name = "dirigera-readaptive"
+version = "0.1.0"
+description = "Recover native DIRIGERA Adaptive lighting after physical power cycles."
+requires-python = ">=3.11"
+dependencies = [
+    "PyYAML>=6",
+    "requests>=2",
+    "websockets>=12",
+]
+
+[project.scripts]
+dirigera-readaptive = "dirigera_readaptive.cli:main"
+dirigera-schedule = "dirigera_readaptive.schedule_cli:main"
+dirigera-seasonal-schedule = "dirigera_readaptive.seasonal_cli:main"
+dirigera-schedule-profiles = "dirigera_readaptive.schedule_profiles_cli:main"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

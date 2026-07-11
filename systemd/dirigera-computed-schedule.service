@@ -1,0 +1,12 @@
+[Unit]
+Description=Apply computed DIRIGERA Adaptive schedule
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=dirigera
+Group=dirigera
+WorkingDirectory=/opt/dirigera-readaptive
+Environment=PYTHONPATH=/opt/dirigera-readaptive/src
+ExecStart=/usr/bin/python3 -m dirigera_readaptive.schedule_profiles_cli --config /opt/dirigera-readaptive/config.yaml

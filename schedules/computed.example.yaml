@@ -1,0 +1,19 @@
+adaptiveSchedule:
+  - startTime: "00:00"
+    lightLevel: 10
+    colorTemperature: 1000
+  - startTime: "05:00"
+    lightLevel: 10
+    colorTemperature: 1000
+  - startTime: "08:00"
+    lightLevel: 90
+    colorTemperature: 2700
+  - startTime: "14:00"
+    lightLevel: 100
+    colorTemperature: 4600
+  - startTime: "18:00"
+    lightLevel: 90
+    colorTemperature: 2450
+  - startTime: "20:00"
+    lightLevel: 81
+    colorTemperature: 2000

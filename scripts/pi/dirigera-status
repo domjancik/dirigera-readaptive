@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+set -u
+
+APP_DIR="${DIRIGERA_APP_DIR:-/opt/dirigera-readaptive}"
+CONFIG="${DIRIGERA_CONFIG:-$APP_DIR/config.yaml}"
+SCHEDULE_DIR="${DIRIGERA_SCHEDULE_DIR:-$APP_DIR/schedules}"
+
+section() {
+  printf '\n== %s ==\n' "$1"
+}
+
+unit_line() {
+  local unit="$1"
+  local active enabled since
+  active="$(systemctl is-active "$unit" 2>/dev/null || true)"
+  enabled="$(systemctl is-enabled "$unit" 2>/dev/null || true)"
+  since="$(systemctl show "$unit" -p ActiveEnterTimestamp --value 2>/dev/null || true)"
+  printf '%-36s active=%-10s enabled=%-10s since=%s\n' "$unit" "${active:-unknown}" "${enabled:-unknown}" "${since:-unknown}"
+}
+
+section "Host"
+hostnamectl --static 2>/dev/null || hostname
+date --iso-8601=seconds
+
+section "Units"
+unit_line dirigera-readaptive.service
+unit_line dirigera-computed-schedule.service
+unit_line dirigera-computed-schedule.timer
+
+section "Timer"
+systemctl list-timers --all dirigera-computed-schedule.timer --no-pager 2>/dev/null || true
+
+section "Recent Schedule Updates"
+journalctl -u dirigera-computed-schedule.service -n 30 --no-pager 2>/dev/null || true
+
+section "Recent Recovery Daemon Logs"
+journalctl -u dirigera-readaptive.service -n 30 --no-pager 2>/dev/null || true
+
+section "Generated Schedule Files"
+if [ -d "$SCHEDULE_DIR" ]; then
+  find "$SCHEDULE_DIR" -maxdepth 1 -type f -name '*.yaml' -printf '%TY-%Tm-%Td %TH:%TM %9s %p\n' 2>/dev/null | sort || true
+else
+  printf 'Missing schedule directory: %s\n' "$SCHEDULE_DIR"
+fi
+
+section "Configured Schedule Profiles"
+if [ -f "$CONFIG" ]; then
+  PYTHONPATH="$APP_DIR/src" python3 - "$CONFIG" <<'PY' 2>/dev/null || true
+import sys
+from pathlib import Path
+import yaml
+
+config = yaml.safe_load(Path(sys.argv[1]).read_text(encoding="utf-8")) or {}
+profiles = ((config.get("schedule_updates") or {}).get("profiles") or [])
+for profile in profiles:
+    print(
+        f"{profile.get('name')} -> {profile.get('profile_id')} "
+        f"output={profile.get('output')}"
+    )
+PY
+else
+  printf 'Missing config file: %s\n' "$CONFIG"
+fi

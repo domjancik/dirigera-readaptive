@@ -1,0 +1,10 @@
+.env
+config.yaml
+captures/
+__pycache__/
+.pytest_cache/
+*.pyc
+artifacts/**/.git/
+artifacts/**/bin/
+artifacts/**/obj/
+artifacts/ZdraveSvetlo/SunriseSunset/
