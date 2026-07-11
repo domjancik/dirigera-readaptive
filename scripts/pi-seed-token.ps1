@@ -1,6 +1,6 @@
 param(
-    [string]$PiHost = "raspberrypi.local",
-    [string]$PiUser = "dirigera",
+    [string]$PiHost = "192.168.1.250",
+    [string]$PiUser = "piadmin",
     [string]$EnvPath = ".env",
     [string]$TokenPath = "/etc/dirigera-readaptive/token"
 )

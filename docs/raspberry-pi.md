@@ -4,14 +4,14 @@ Target layout:
 
 - App: `/opt/dirigera-readaptive`
 - Token: `/etc/dirigera-readaptive/token`
-- Runtime user: `dirigera`
+- Runtime user: `piadmin`
 
 ## Seed Existing Token
 
 From this Windows checkout:
 
 ```powershell
-pwsh -ExecutionPolicy Bypass -File .\scripts\pi-seed-token.ps1 -PiHost 192.168.1.250 -PiUser dirigera
+pwsh -ExecutionPolicy Bypass -File .\scripts\pi-seed-token.ps1 -PiHost 192.168.1.250 -PiUser piadmin
 ```
 
 The script reads `DIRIGERA_TOKEN` from local `.env` and writes it to the Pi as a
@@ -64,13 +64,13 @@ hub profile only when its schedule changed.
 
 ## Status Scripts
 
-Install the helper scripts into the `dirigera` user's home:
+Install the helper scripts into the `piadmin` user's home:
 
 ```powershell
-pwsh -ExecutionPolicy Bypass -File .\scripts\pi-install-status-scripts.ps1 -PiHost 192.168.1.250 -PiUser dirigera
+pwsh -ExecutionPolicy Bypass -File .\scripts\pi-install-status-scripts.ps1 -PiHost 192.168.1.250 -PiUser piadmin
 ```
 
-They are installed to `/home/dirigera/bin`:
+They are installed to `/home/piadmin/bin`:
 
 - `dirigera-status`: overview of service states, timer, recent logs, generated
   schedule files, and configured schedule profiles.

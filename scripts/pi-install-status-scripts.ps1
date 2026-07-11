@@ -1,10 +1,14 @@
 param(
     [string]$PiHost = "192.168.1.250",
-    [string]$PiUser = "dirigera",
-    [string]$RemoteBin = "/home/dirigera/bin"
+    [string]$PiUser = "piadmin",
+    [string]$RemoteBin = ""
 )
 
 $ErrorActionPreference = "Stop"
+
+if (-not $RemoteBin) {
+    $RemoteBin = "/home/$PiUser/bin"
+}
 
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $localPiScripts = Join-Path $scriptRoot "pi"
