@@ -9,4 +9,4 @@ User=piadmin
 Group=piadmin
 WorkingDirectory=/opt/dirigera-readaptive
 Environment=PYTHONPATH=/opt/dirigera-readaptive/src
-ExecStart=/usr/bin/python3 -m dirigera_readaptive.schedule_profiles_cli --config /opt/dirigera-readaptive/config.yaml
+ExecStart=/opt/dirigera-readaptive/.venv/bin/python -m dirigera_readaptive.schedule_profiles_cli --config /opt/dirigera-readaptive/config.yaml

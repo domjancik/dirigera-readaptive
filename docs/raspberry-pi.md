@@ -50,7 +50,19 @@ schedule_updates:
 
 ## Services
 
-Install the units from `systemd/` to `/etc/systemd/system/`, then:
+Install or update the app, dependencies, systemd units, and status scripts:
+
+```powershell
+pwsh -ExecutionPolicy Bypass -File .\scripts\pi-install-app.ps1 -PiHost 192.168.1.250 -PiUser piadmin
+```
+
+The installer clones or updates the public repo at `/opt/dirigera-readaptive`,
+creates `/opt/dirigera-readaptive/.venv`, installs Python dependencies, copies
+`config.rpi.example.yaml` to `config.yaml` if no config exists, installs the
+systemd units, and enables the daemon service and schedule timer. If the token
+file exists, it also starts the daemon, timer, and one immediate schedule update.
+
+If installing units manually from `systemd/` to `/etc/systemd/system/`, run:
 
 ```bash
 sudo systemctl daemon-reload
@@ -64,7 +76,8 @@ hub profile only when its schedule changed.
 
 ## Status Scripts
 
-Install the helper scripts into the `piadmin` user's home:
+The app installer copies the helper scripts into `/home/piadmin/bin`. To install
+or refresh only those scripts:
 
 ```powershell
 pwsh -ExecutionPolicy Bypass -File .\scripts\pi-install-status-scripts.ps1 -PiHost 192.168.1.250 -PiUser piadmin

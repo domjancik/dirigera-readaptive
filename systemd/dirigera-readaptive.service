@@ -9,7 +9,7 @@ User=piadmin
 Group=piadmin
 WorkingDirectory=/opt/dirigera-readaptive
 Environment=PYTHONPATH=/opt/dirigera-readaptive/src
-ExecStart=/usr/bin/python3 -m dirigera_readaptive.cli --config /opt/dirigera-readaptive/config.yaml
+ExecStart=/opt/dirigera-readaptive/.venv/bin/python -m dirigera_readaptive.cli --config /opt/dirigera-readaptive/config.yaml
 Restart=on-failure
 RestartSec=5
 
