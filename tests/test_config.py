@@ -17,6 +17,8 @@ lights:
   - id: light-1
     adaptive_profile_id: profile-1
     reconnect_delay_ms: 1500
+    reconnect_retry_delay_ms: 750
+    reconnect_attempts: 8
 
 poll_interval_seconds: 12
 activation_cooldown_seconds: 45
@@ -31,6 +33,8 @@ activation_cooldown_seconds: 45
     assert config.lights[0].id == "light-1"
     assert config.lights[0].adaptive_profile_id == "profile-1"
     assert config.lights[0].reconnect_delay_ms == 1500
+    assert config.lights[0].reconnect_retry_delay_ms == 750
+    assert config.lights[0].reconnect_attempts == 8
     assert config.poll_interval_seconds == 12
     assert config.activation_cooldown_seconds == 45
     assert config.recover_on_reconnect is True

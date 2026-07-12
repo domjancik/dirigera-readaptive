@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import time
 from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
@@ -24,6 +25,11 @@ class LightConfig:
     id: str
     adaptive_profile_id: str | None = None
     reconnect_delay_ms: int = 1000
+    reconnect_retry_delay_ms: int = 1000
+    reconnect_attempts: int = 6
+
+
+logger = logging.getLogger(__name__)
 
 
 class RecoveryDaemon:
@@ -93,20 +99,39 @@ class RecoveryDaemon:
             return
 
         light = self._lights[device_id]
-        await self._sleep(light.reconnect_delay_ms / 1000)
+        for attempt in range(light.reconnect_attempts):
+            delay_ms = (
+                light.reconnect_delay_ms
+                if attempt == 0
+                else light.reconnect_retry_delay_ms
+            )
+            await self._sleep(delay_ms / 1000)
 
-        device = await self._client.get_device(device_id)
-        if not device.get("isReachable"):
-            return
-        if not device.get("attributes", {}).get("isOn"):
+            device = await self._client.get_device(device_id)
+            if not device.get("isReachable"):
+                continue
+            if not device.get("attributes", {}).get("isOn"):
+                continue
+
+            profile_id = self._profile_id_for(light, device)
+            if not profile_id:
+                continue
+
+            await self._activate_with_retry(device_id, profile_id)
+            self._last_activation_at[device_id] = self._now()
+            logger.info(
+                "Adaptive recovery activated device=%s profile=%s attempt=%s",
+                device_id,
+                profile_id,
+                attempt + 1,
+            )
             return
 
-        profile_id = self._profile_id_for(light, device)
-        if not profile_id:
-            return
-
-        await self._activate_with_retry(device_id, profile_id)
-        self._last_activation_at[device_id] = self._now()
+        logger.info(
+            "Adaptive recovery skipped device=%s reason=not-ready attempts=%s",
+            device_id,
+            light.reconnect_attempts,
+        )
 
     async def _activate_with_retry(self, device_id: str, profile_id: str) -> None:
         delay_seconds = 0.5

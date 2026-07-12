@@ -70,4 +70,6 @@ def _light_config(raw: dict[str, Any]) -> LightConfig:
         id=str(raw["id"]),
         adaptive_profile_id=raw.get("adaptive_profile_id"),
         reconnect_delay_ms=int(raw.get("reconnect_delay_ms", 1000)),
+        reconnect_retry_delay_ms=int(raw.get("reconnect_retry_delay_ms", 1000)),
+        reconnect_attempts=int(raw.get("reconnect_attempts", 6)),
     )
