@@ -58,11 +58,34 @@ lights:
     config = load_config(Path(config_path))
 
     assert config.lights[0].adaptive_profile_id is None
-    assert config.lights[0].reconnect_delay_ms == 1000
+    assert config.lights[0].reconnect_delay_ms == 500
+    assert config.lights[0].reconnect_retry_delay_ms == 1000
+    assert config.lights[0].reconnect_attempts == 12
     assert config.poll_interval_seconds == 10
     assert config.activation_cooldown_seconds == 30
     assert config.recover_on_reconnect is True
     assert config.recover_on_power_on is False
+
+
+def test_load_config_allows_dynamic_adaptive_light_discovery_without_static_lights(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setenv("DIRIGERA_TOKEN", "secret-token")
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        """
+dirigera:
+  host: 192.168.1.249
+
+watch_adaptive_on_lights: true
+""".strip(),
+        encoding="utf-8",
+    )
+
+    config = load_config(config_path)
+
+    assert config.lights == []
+    assert config.watch_adaptive_on_lights is True
 
 
 def test_load_config_reads_token_from_file(tmp_path, monkeypatch):

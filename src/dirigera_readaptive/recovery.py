@@ -24,9 +24,9 @@ NowFn = Callable[[], float]
 class LightConfig:
     id: str
     adaptive_profile_id: str | None = None
-    reconnect_delay_ms: int = 1000
+    reconnect_delay_ms: int = 500
     reconnect_retry_delay_ms: int = 1000
-    reconnect_attempts: int = 6
+    reconnect_attempts: int = 12
 
 
 logger = logging.getLogger(__name__)
@@ -45,6 +45,8 @@ class RecoveryDaemon:
     ) -> None:
         self._client = client
         self._lights = {light.id: light for light in lights}
+        self._configured_light_ids = set(self._lights)
+        self._discovered_light_ids: set[str] = set()
         self._cooldown_seconds = cooldown_seconds
         self._recover_on_reconnect = recover_on_reconnect
         self._recover_on_power_on = recover_on_power_on
@@ -56,6 +58,28 @@ class RecoveryDaemon:
 
     async def handle_reachability(self, device_id: str, is_reachable: bool) -> None:
         await self.handle_device_state(device_id, is_reachable=is_reachable)
+
+    def sync_adaptive_lights(self, devices: Sequence[dict[str, Any]]) -> None:
+        discovered_ids = {
+            device_id
+            for device in devices
+            if device.get("deviceType") == "light"
+            and isinstance((device_id := device.get("id")), str)
+            and (device.get("attributes", {}).get("deviceOnBehavior") or {}).get("behavior")
+            == "adaptiveProfile"
+        }
+
+        for device_id in discovered_ids:
+            self._lights.setdefault(device_id, LightConfig(id=device_id))
+
+        for device_id in self._discovered_light_ids - discovered_ids:
+            if device_id not in self._configured_light_ids:
+                self._lights.pop(device_id, None)
+                self._reachable.pop(device_id, None)
+                self._is_on.pop(device_id, None)
+                self._last_activation_at.pop(device_id, None)
+
+        self._discovered_light_ids = discovered_ids
 
     async def handle_device_state(
         self,

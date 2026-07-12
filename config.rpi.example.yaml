@@ -2,16 +2,9 @@ dirigera:
   host: 192.168.1.249
   token_file: /etc/dirigera-readaptive/token
 
-lights:
-  - id: 846dad52-55e2-4ee2-ba48-b929186a2d2a_1
-    # Omit adaptive_profile_id to follow the profile saved in DIRIGERA's on behavior.
-    reconnect_delay_ms: 500
-    reconnect_retry_delay_ms: 1000
-    reconnect_attempts: 12
-  - id: 2fc64068-62f3-4d8e-8bc0-2702881ec362_1
-    reconnect_delay_ms: 500
-    reconnect_retry_delay_ms: 1000
-    reconnect_attempts: 12
+# Recover every light whose DIRIGERA on behavior selects an adaptive profile.
+watch_adaptive_on_lights: true
+lights: []
 
 poll_interval_seconds: 10
 activation_cooldown_seconds: 30

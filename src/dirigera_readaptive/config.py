@@ -20,6 +20,7 @@ class DirigeraConfig:
 class AppConfig:
     dirigera: DirigeraConfig
     lights: list[LightConfig]
+    watch_adaptive_on_lights: bool = False
     poll_interval_seconds: int = 10
     activation_cooldown_seconds: int = 30
     recover_on_reconnect: bool = True
@@ -33,12 +34,14 @@ def load_config(path: Path) -> AppConfig:
 
     lights_raw = raw.get("lights") or []
     lights = [_light_config(item) for item in lights_raw]
-    if not lights:
+    watch_adaptive_on_lights = bool(raw.get("watch_adaptive_on_lights", False))
+    if not lights and not watch_adaptive_on_lights:
         raise ValueError("At least one light must be configured.")
 
     return AppConfig(
         dirigera=DirigeraConfig(host=str(dirigera["host"]), token=token),
         lights=lights,
+        watch_adaptive_on_lights=watch_adaptive_on_lights,
         poll_interval_seconds=int(raw.get("poll_interval_seconds", 10)),
         activation_cooldown_seconds=int(raw.get("activation_cooldown_seconds", 30)),
         recover_on_reconnect=bool(raw.get("recover_on_reconnect", True)),
@@ -69,7 +72,7 @@ def _light_config(raw: dict[str, Any]) -> LightConfig:
     return LightConfig(
         id=str(raw["id"]),
         adaptive_profile_id=raw.get("adaptive_profile_id"),
-        reconnect_delay_ms=int(raw.get("reconnect_delay_ms", 1000)),
+        reconnect_delay_ms=int(raw.get("reconnect_delay_ms", 500)),
         reconnect_retry_delay_ms=int(raw.get("reconnect_retry_delay_ms", 1000)),
-        reconnect_attempts=int(raw.get("reconnect_attempts", 6)),
+        reconnect_attempts=int(raw.get("reconnect_attempts", 12)),
     )

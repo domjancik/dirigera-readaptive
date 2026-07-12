@@ -28,6 +28,9 @@ class HttpDirigeraClient:
     async def get_device(self, device_id: str) -> dict[str, Any]:
         return await asyncio.to_thread(self._get_device_sync, device_id)
 
+    async def get_devices(self) -> list[dict[str, Any]]:
+        return await asyncio.to_thread(self._get_devices_sync)
+
     async def activate_adaptive(self, device_id: str, profile_id: str) -> None:
         await asyncio.to_thread(self._activate_adaptive_sync, device_id, profile_id)
 
@@ -53,6 +56,16 @@ class HttpDirigeraClient:
     def _get_device_sync(self, device_id: str) -> dict[str, Any]:
         response = self._session.get(
             f"{self._base_url}/devices/{device_id}",
+            headers=self._headers,
+            timeout=10,
+            verify=False,
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def _get_devices_sync(self) -> list[dict[str, Any]]:
+        response = self._session.get(
+            f"{self._base_url}/devices",
             headers=self._headers,
             timeout=10,
             verify=False,

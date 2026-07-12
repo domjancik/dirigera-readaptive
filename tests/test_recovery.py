@@ -116,6 +116,123 @@ def test_recovery_logs_when_light_never_becomes_ready(caplog):
     assert "Adaptive recovery skipped device=light-1 reason=not-ready attempts=1" in caplog.text
 
 
+def test_discovery_adds_every_light_with_an_adaptive_on_behavior():
+    async def run():
+        client = FakeClient(
+            {
+                "adaptive-light": {
+                    "id": "adaptive-light",
+                    "isReachable": True,
+                    "attributes": {
+                        "isOn": True,
+                        "deviceOnBehavior": {
+                            "behavior": "adaptiveProfile",
+                            "profileId": "profile-1",
+                        },
+                    },
+                    "adaptiveProfile": {},
+                }
+            }
+        )
+        daemon = RecoveryDaemon(
+            client=client,
+            lights=[],
+            cooldown_seconds=30,
+            now=lambda: 100.0,
+            sleep=lambda _: asyncio.sleep(0),
+        )
+        daemon.sync_adaptive_lights(
+            [
+                {
+                    "id": "adaptive-light",
+                    "deviceType": "light",
+                    "attributes": {
+                        "deviceOnBehavior": {"behavior": "adaptiveProfile"}
+                    },
+                },
+                {
+                    "id": "manual-light",
+                    "deviceType": "light",
+                    "attributes": {
+                        "deviceOnBehavior": {"behavior": "lastState"}
+                    },
+                },
+                {
+                    "id": "adaptive-sensor",
+                    "deviceType": "motionSensor",
+                    "attributes": {
+                        "deviceOnBehavior": {"behavior": "adaptiveProfile"}
+                    },
+                },
+            ]
+        )
+
+        await daemon.handle_reachability("adaptive-light", False)
+        await daemon.handle_reachability("adaptive-light", True)
+        await daemon.handle_reachability("manual-light", False)
+        await daemon.handle_reachability("manual-light", True)
+
+        assert client.activations == [("adaptive-light", "profile-1")]
+
+    asyncio.run(run())
+
+
+def test_discovery_stops_watching_a_light_when_adaptive_on_behavior_is_removed():
+    async def run():
+        client = FakeClient(
+            {
+                "light-1": {
+                    "id": "light-1",
+                    "isReachable": True,
+                    "attributes": {
+                        "isOn": True,
+                        "deviceOnBehavior": {
+                            "behavior": "adaptiveProfile",
+                            "profileId": "profile-1",
+                        },
+                    },
+                    "adaptiveProfile": {},
+                }
+            }
+        )
+        daemon = RecoveryDaemon(
+            client=client,
+            lights=[],
+            cooldown_seconds=30,
+            now=lambda: 100.0,
+            sleep=lambda _: asyncio.sleep(0),
+        )
+        daemon.sync_adaptive_lights(
+            [
+                {
+                    "id": "light-1",
+                    "deviceType": "light",
+                    "attributes": {
+                        "deviceOnBehavior": {"behavior": "adaptiveProfile"}
+                    },
+                }
+            ]
+        )
+        daemon.sync_adaptive_lights(
+            [
+                {
+                    "id": "light-1",
+                    "deviceType": "light",
+                    "attributes": {
+                        "deviceOnBehavior": {"behavior": "lastState"}
+                    },
+                }
+            ]
+        )
+
+        await daemon.handle_reachability("light-1", False)
+        await daemon.handle_reachability("light-1", True)
+
+        assert client.activations == []
+
+    asyncio.run(run())
+
+
 def test_power_on_transition_is_disabled_by_default():
     async def run():
         client = FakeClient(

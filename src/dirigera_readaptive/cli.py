@@ -24,10 +24,18 @@ async def run_daemon(config_path: Path) -> None:
         recover_on_power_on=config.recover_on_power_on,
     )
 
-    await daemon.poll_once()
+    if config.watch_adaptive_on_lights:
+        await _poll_inventory(client, daemon)
+    else:
+        await daemon.poll_once()
     await asyncio.gather(
         _websocket_loop(client, daemon),
-        _poll_loop(daemon, config.poll_interval_seconds),
+        _poll_loop(
+            client,
+            daemon,
+            config.poll_interval_seconds,
+            config.watch_adaptive_on_lights,
+        ),
     )
 
 
@@ -46,11 +54,34 @@ async def _websocket_loop(client: HttpDirigeraClient, daemon: RecoveryDaemon) ->
             await asyncio.sleep(5)
 
 
-async def _poll_loop(daemon: RecoveryDaemon, poll_interval_seconds: int) -> None:
+async def _poll_inventory(client: HttpDirigeraClient, daemon: RecoveryDaemon) -> None:
+    devices = await client.get_devices()
+    daemon.sync_adaptive_lights(devices)
+    for device in devices:
+        device_id = device.get("id")
+        if not isinstance(device_id, str):
+            continue
+        attributes = device.get("attributes") or {}
+        await daemon.handle_device_state(
+            device_id,
+            is_reachable=device.get("isReachable"),
+            is_on=attributes.get("isOn"),
+        )
+
+
+async def _poll_loop(
+    client: HttpDirigeraClient,
+    daemon: RecoveryDaemon,
+    poll_interval_seconds: int,
+    watch_adaptive_on_lights: bool,
+) -> None:
     while True:
         await asyncio.sleep(poll_interval_seconds)
         try:
-            await daemon.poll_once()
+            if watch_adaptive_on_lights:
+                await _poll_inventory(client, daemon)
+            else:
+                await daemon.poll_once()
         except Exception as error:
             print(f"Polling failed: {error}")
 

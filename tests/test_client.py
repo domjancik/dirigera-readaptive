@@ -20,6 +20,7 @@ class FakeSession:
     def __init__(self):
         self.patch_calls = []
         self.get_calls = []
+        self.get_payload = {"id": "light-1"}
 
     def patch(self, url, headers, json, timeout, verify):
         self.patch_calls.append(
@@ -42,7 +43,7 @@ class FakeSession:
                 "verify": verify,
             }
         )
-        return FakeResponse({"id": "light-1"})
+        return FakeResponse(self.get_payload)
 
     def put(self, url, headers, json, timeout, verify):
         self.patch_calls.append(
@@ -87,6 +88,20 @@ def test_get_device_reads_device_endpoint():
 
         assert device == {"id": "light-1"}
         assert session.get_calls[0]["url"] == "https://192.0.2.10:8443/v1/devices/light-1"
+
+    asyncio.run(run())
+
+
+def test_get_devices_reads_device_inventory_endpoint():
+    async def run():
+        session = FakeSession()
+        session.get_payload = [{"id": "light-1"}, {"id": "light-2"}]
+        client = HttpDirigeraClient(host="192.0.2.10", token="token", session=session)
+
+        devices = await client.get_devices()
+
+        assert devices == [{"id": "light-1"}, {"id": "light-2"}]
+        assert session.get_calls[0]["url"] == "https://192.0.2.10:8443/v1/devices"
 
     asyncio.run(run())
 
