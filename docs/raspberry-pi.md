@@ -76,6 +76,37 @@ hub profile only when its schedule or dated display name changed. If `profile_id
 is omitted, its first run creates a profile from `profile_name`; later runs find
 and update that same named slot.
 
+The timer runs at 03:10, 09:10, 15:10, and 21:10. Only the first update after a
+date change normally writes to the hub; the additional runs retry after a short
+hub or network outage. `Persistent=true` also runs a missed timer after the Pi
+returns from a power outage.
+
+## Storage Retention
+
+The installer limits persistent journal logs to 100 MB, keeps at least 500 MB
+of disk free, limits runtime journal logs to 50 MB, and retains journal entries
+for at most 30 days. The recovery and schedule services do not create their own
+growing log files.
+
+The optional raw WebSocket capture utility is separate from the Pi services. It
+rotates at 25 MiB and, by default, retains 250 MiB of completed JSONL captures.
+Set `-MaxTotalMb 0` or `--max-total-mb 0` only for a deliberately temporary,
+manually monitored capture.
+
+## Power and Network Recovery
+
+Both app units are enabled at boot. The recovery daemon reconnects its
+WebSocket listener and continues polling when the hub or network is temporarily
+unavailable. The schedule timer is persistent and has four daily opportunities
+to apply the current date's profile.
+
+The daemon intentionally does not force Adaptive mode for every light during
+its startup inventory. That preserves a deliberate manual override made with a
+remote or the app. Consequently, if the Pi is unavailable for the entire
+offline-to-online transition of a light, that particular recovery event cannot
+be reconstructed after boot. Use a stable power supply and, where that edge
+case must be covered, put the Pi and hub on a small UPS.
+
 ## Status Scripts
 
 The app installer copies the helper scripts into `/home/piadmin/bin`. To install

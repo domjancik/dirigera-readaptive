@@ -78,6 +78,8 @@ This is useful while living with the system normally. It can capture delayed
 profile shifts, app/remote overrides, `isOn` transitions, reachability changes,
 and whether the hub emits anything when a light reports Adaptive but holds stale
 brightness. Logs are written under `captures/` and are gitignored.
+They rotate at 25 MiB and retain 250 MiB of completed capture files by default;
+pass `-MaxTotalMb 0` only for a deliberately temporary, monitored capture.
 
 ## Adaptive Schedule Updates
 

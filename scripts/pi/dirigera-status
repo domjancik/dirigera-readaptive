@@ -22,6 +22,10 @@ section "Host"
 hostnamectl --static 2>/dev/null || hostname
 date --iso-8601=seconds
 
+section "Storage"
+df -h / "$APP_DIR" 2>/dev/null || df -h /
+journalctl --disk-usage 2>/dev/null || true
+
 section "Units"
 unit_line dirigera-readaptive.service
 unit_line dirigera-computed-schedule.service

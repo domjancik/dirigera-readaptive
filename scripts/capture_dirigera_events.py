@@ -20,10 +20,17 @@ def load_env(path: Path) -> dict[str, str]:
 
 
 class RotatingJsonlWriter:
-    def __init__(self, label: str, rotate_bytes: int) -> None:
+    def __init__(
+        self,
+        label: str,
+        rotate_bytes: int,
+        max_total_bytes: int = 250 * 1024 * 1024,
+        captures_dir: Path | None = None,
+    ) -> None:
         self._label = re.sub(r"[^A-Za-z0-9_.-]", "-", label)
         self._rotate_bytes = rotate_bytes
-        self._captures_dir = Path("captures")
+        self._max_total_bytes = max_total_bytes
+        self._captures_dir = captures_dir or Path("captures")
         self._captures_dir.mkdir(exist_ok=True)
         self._file = None
         self.path = self._new_path()
@@ -52,11 +59,32 @@ class RotatingJsonlWriter:
         return self._captures_dir / f"{stamp}-{self._label}-events.jsonl"
 
     def _open(self) -> None:
+        self._prune_old_captures()
         print(f"Recording raw events to {self.path}")
         self._file = self.path.open("a", encoding="utf-8")
 
+    def _prune_old_captures(self) -> None:
+        if self._max_total_bytes <= 0:
+            return
 
-async def capture(env_path: Path, label: str, seconds: int, rotate_mb: int) -> Path:
+        captures = sorted(
+            self._captures_dir.glob("*-events.jsonl"),
+            key=lambda path: (path.stat().st_mtime_ns, path.name),
+        )
+        total_bytes = sum(path.stat().st_size for path in captures)
+        while captures and total_bytes > self._max_total_bytes:
+            oldest = captures.pop(0)
+            total_bytes -= oldest.stat().st_size
+            oldest.unlink()
+
+
+async def capture(
+    env_path: Path,
+    label: str,
+    seconds: int,
+    rotate_mb: int,
+    max_total_mb: int,
+) -> Path:
     env = load_env(env_path)
     host = env["DIRIGERA_HOST"]
     token = env["DIRIGERA_TOKEN"]
@@ -72,7 +100,11 @@ async def capture(env_path: Path, label: str, seconds: int, rotate_mb: int) -> P
     started_at = asyncio.get_running_loop().time()
     deadline = started_at + seconds if seconds > 0 else None
 
-    with RotatingJsonlWriter(label=label, rotate_bytes=rotate_bytes) as events:
+    with RotatingJsonlWriter(
+        label=label,
+        rotate_bytes=rotate_bytes,
+        max_total_bytes=max_total_mb * 1024 * 1024,
+    ) as events:
         while deadline is None or asyncio.get_running_loop().time() < deadline:
             try:
                 print(f"Connecting to {uri}")
@@ -145,9 +177,23 @@ def main() -> None:
         default=25,
         help="Start a new JSONL file after this many MiB. Use 0 to disable rotation.",
     )
+    parser.add_argument(
+        "--max-total-mb",
+        type=int,
+        default=250,
+        help="Retain at most this many MiB of completed JSONL captures. Use 0 to disable retention.",
+    )
     args = parser.parse_args()
 
-    asyncio.run(capture(Path(args.env), args.label, args.seconds, args.rotate_mb))
+    asyncio.run(
+        capture(
+            Path(args.env),
+            args.label,
+            args.seconds,
+            args.rotate_mb,
+            args.max_total_mb,
+        )
+    )
 
 
 if __name__ == "__main__":

@@ -3,6 +3,9 @@ Description=Run computed DIRIGERA Adaptive schedule update daily
 
 [Timer]
 OnCalendar=*-*-* 03:10:00
+OnCalendar=*-*-* 09:10:00
+OnCalendar=*-*-* 15:10:00
+OnCalendar=*-*-* 21:10:00
 Persistent=true
 
 [Install]

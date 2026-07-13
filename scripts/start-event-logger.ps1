@@ -1,6 +1,7 @@
 param(
     [string]$Label = "continuous",
-    [int]$RotateMb = 25
+    [int]$RotateMb = 25,
+    [int]$MaxTotalMb = 250
 )
 
 $ErrorActionPreference = "Stop"
@@ -21,7 +22,8 @@ $arguments = @(
     ".\scripts\capture_dirigera_events.py",
     "--label", $Label,
     "--seconds", "0",
-    "--rotate-mb", "$RotateMb"
+    "--rotate-mb", "$RotateMb",
+    "--max-total-mb", "$MaxTotalMb"
 )
 
 $process = Start-Process `
@@ -33,4 +35,4 @@ $process = Start-Process `
 
 Set-Content -LiteralPath $pidPath -Value $process.Id -Encoding utf8NoBOM
 Write-Host "Started DIRIGERA event logger as PID $($process.Id)."
-Write-Host "Logs: $root\captures\*-$Label-events.jsonl"
+Write-Host "Logs: $root\captures\*-$Label-events.jsonl (retention: $MaxTotalMb MiB)"
