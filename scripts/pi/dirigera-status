@@ -26,6 +26,12 @@ section "Storage"
 df -h / "$APP_DIR" 2>/dev/null || df -h /
 journalctl --disk-usage 2>/dev/null || true
 
+section "Firmware Health"
+if command -v vcgencmd >/dev/null 2>&1; then
+  vcgencmd measure_temp || true
+  vcgencmd get_throttled || true
+fi
+
 section "Units"
 unit_line dirigera-readaptive.service
 unit_line dirigera-computed-schedule.service

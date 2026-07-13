@@ -107,6 +107,10 @@ offline-to-online transition of a light, that particular recovery event cannot
 be reconstructed after boot. Use a stable power supply and, where that edge
 case must be covered, put the Pi and hub on a small UPS.
 
+`dirigera-status` reports `vcgencmd` temperature and throttle flags when the
+firmware command is available. A nonzero `get_throttled` result is worth
+investigating before relying on the Pi for unattended operation.
+
 ## Status Scripts
 
 The app installer copies the helper scripts into `/home/piadmin/bin`. To install
