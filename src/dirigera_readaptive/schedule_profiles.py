@@ -20,7 +20,7 @@ from .seasonal_schedule import (
 class ScheduleProfileTarget:
     name: str
     profile_name: str
-    profile_id: str
+    profile_id: str | None
     output: Path | None
     curve: CurveConfig
 
@@ -76,12 +76,20 @@ async def update_configured_profiles(
         )
         if target.output:
             _write_schedule_file(target.output, schedule)
-        results[target.name] = await update_profile_if_changed(
+        profile_name = f"{target.profile_name} {config.target_date.isoformat()}"
+        profile_id, created = await _resolve_profile_id(
             client,
-            target.profile_id,
+            target,
             schedule,
-            profile_name=f"{target.profile_name} {config.target_date.isoformat()}",
+            profile_name,
         )
+        updated = await update_profile_if_changed(
+            client,
+            profile_id,
+            schedule,
+            profile_name=profile_name,
+        )
+        results[target.name] = created or updated
     return results
 
 
@@ -93,10 +101,52 @@ def _profile_target(raw: Any) -> ScheduleProfileTarget:
     return ScheduleProfileTarget(
         name=str(raw["name"]),
         profile_name=str(raw.get("profile_name", raw["name"])),
-        profile_id=str(raw["profile_id"]),
+        profile_id=str(raw["profile_id"]) if raw.get("profile_id") else None,
         output=Path(str(output)) if output else None,
         curve=_curve_config(raw.get("curve") or {}),
     )
+
+
+async def _resolve_profile_id(
+    client: ProfileClient,
+    target: ScheduleProfileTarget,
+    schedule: list[ScheduleEntry],
+    profile_name: str,
+) -> tuple[str, bool]:
+    if target.profile_id:
+        return target.profile_id, False
+
+    home = await client.get_home()
+    matches = _matching_profiles(home, target.profile_name)
+    if len(matches) == 1:
+        return str(matches[0]["id"]), False
+    if len(matches) > 1:
+        raise ValueError(f"Multiple adaptive profiles match {target.profile_name!r}.")
+
+    create_profile = getattr(client, "create_adaptive_profile", None)
+    if create_profile is None:
+        raise ValueError("Profile client cannot create an adaptive profile.")
+    await create_profile({"name": profile_name, "adaptiveSchedule": schedule})
+
+    home = await client.get_home()
+    matches = _matching_profiles(home, target.profile_name)
+    if len(matches) != 1:
+        raise ValueError(f"Created adaptive profile {profile_name!r} was not found.")
+    return str(matches[0]["id"]), True
+
+
+def _matching_profiles(home: dict[str, Any], profile_name: str) -> list[dict[str, Any]]:
+    prefix = f"{profile_name} "
+    return [
+        profile
+        for profile in home.get("adaptiveProfiles") or []
+        if profile.get("name") == profile_name
+        or (
+            isinstance(profile.get("name"), str)
+            and str(profile["name"]).startswith(prefix)
+            and len(str(profile["name"])) == len(prefix) + 10
+        )
+    ]
 
 
 def _curve_config(raw: dict[str, Any]) -> CurveConfig:

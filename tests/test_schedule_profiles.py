@@ -122,3 +122,54 @@ schedule_updates:
     assert first == {"standard": True}
     assert second == {"standard": False}
     assert len(client.updates) == 1
+
+
+def test_profiles_without_ids_are_created_once_then_reused(tmp_path):
+    class ProvisioningClient:
+        def __init__(self):
+            self.home = {"adaptiveProfiles": []}
+            self.created = []
+            self.updates = []
+
+        async def get_home(self):
+            return self.home
+
+        async def create_adaptive_profile(self, profile):
+            self.created.append(profile)
+            self.home["adaptiveProfiles"].append(
+                {
+                    "id": "created-profile",
+                    "name": profile["name"],
+                    "adaptiveSchedule": profile["adaptiveSchedule"],
+                }
+            )
+
+        async def update_adaptive_profile(self, profile_id, profile):
+            self.updates.append((profile_id, profile))
+
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        """
+schedule_updates:
+  date: 2024-06-08
+  latitude: 50.1
+  longitude: 14.5
+  timezone: Europe/Prague
+  profiles:
+    - name: standard
+      profile_name: ReAdaptive
+      curve:
+        extend_day_after_late_sunset: true
+""".strip(),
+        encoding="utf-8",
+    )
+    config = load_schedule_profiles_config(config_path)
+    client = ProvisioningClient()
+
+    first = asyncio.run(update_configured_profiles(client, config))
+    second = asyncio.run(update_configured_profiles(client, config))
+
+    assert first == {"standard": True}
+    assert second == {"standard": False}
+    assert [profile["name"] for profile in client.created] == ["ReAdaptive 2024-06-08"]
+    assert client.updates == []

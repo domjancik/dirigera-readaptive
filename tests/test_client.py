@@ -19,11 +19,24 @@ class FakeResponse:
 class FakeSession:
     def __init__(self):
         self.patch_calls = []
+        self.post_calls = []
         self.get_calls = []
         self.get_payload = {"id": "light-1"}
 
     def patch(self, url, headers, json, timeout, verify):
         self.patch_calls.append(
+            {
+                "url": url,
+                "headers": headers,
+                "json": json,
+                "timeout": timeout,
+                "verify": verify,
+            }
+        )
+        return FakeResponse()
+
+    def post(self, url, headers, json, timeout, verify):
+        self.post_calls.append(
             {
                 "url": url,
                 "headers": headers,
@@ -128,5 +141,31 @@ def test_update_adaptive_profile_uses_verified_put_route():
             "timeout": 10,
             "verify": False,
         }
+
+    asyncio.run(run())
+
+
+def test_create_adaptive_profile_posts_profile_collection():
+    async def run():
+        session = FakeSession()
+        client = HttpDirigeraClient(host="192.0.2.10", token="token", session=session)
+        profile = {
+            "name": "ReAdaptive 2026-07-13",
+            "adaptiveSchedule": [
+                {"startTime": "20:00", "lightLevel": 81, "colorTemperature": 2000}
+            ],
+        }
+
+        await client.create_adaptive_profile(profile)
+
+        assert session.post_calls == [
+            {
+                "url": "https://192.0.2.10:8443/v1/adaptive-profiles",
+                "headers": {"Authorization": "Bearer token"},
+                "json": profile,
+                "timeout": 10,
+                "verify": False,
+            }
+        ]
 
     asyncio.run(run())

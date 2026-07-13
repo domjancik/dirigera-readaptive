@@ -119,6 +119,11 @@ matches the desired schedule. The Raspberry Pi timer uses
 `config.yaml`, so multiple generated profiles can be recomputed and applied in
 one daily run.
 
+When a schedule target omits `profile_id`, the updater finds a dated profile by
+its `profile_name` base (for example `ReAdaptive`) or creates it with the
+generated schedule. This lets a fresh hub provision `ReAdaptive` and
+`ReAdaptive Dimmed` once, then keep updating those same profile slots.
+
 ## Seasonal Schedule Generator
 
 The `dirigera-seasonal-schedule` command ports the old ZdraveSvetlo

@@ -32,12 +32,12 @@ schedule_updates:
   timezone: Europe/Prague
   profiles:
     - name: computed-standard
-      profile_id: 7bbebe49-41a3-48ea-8f5f-9e33a36dad87
+      profile_name: ReAdaptive
       output: /opt/dirigera-readaptive/schedules/computed.yaml
       curve:
         extend_day_after_late_sunset: true
     - name: computed-dimmed
-      profile_id: 8439ba57-ac80-4905-86c5-2acee72d26c5
+      profile_name: ReAdaptive Dimmed
       output: /opt/dirigera-readaptive/schedules/computed-dim.yaml
       curve:
         extend_day_after_late_sunset: true
@@ -72,7 +72,9 @@ sudo systemctl enable --now dirigera-computed-schedule.timer
 
 The schedule timer runs `dirigera-schedule-profiles`, regenerates every profile
 listed in `schedule_updates.profiles[]`, writes each YAML file, and applies each
-hub profile only when its schedule changed.
+hub profile only when its schedule or dated display name changed. If `profile_id`
+is omitted, its first run creates a profile from `profile_name`; later runs find
+and update that same named slot.
 
 ## Status Scripts
 

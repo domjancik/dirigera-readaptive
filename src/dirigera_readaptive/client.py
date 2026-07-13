@@ -40,6 +40,9 @@ class HttpDirigeraClient:
     async def update_adaptive_profile(self, profile_id: str, profile: dict[str, Any]) -> None:
         await asyncio.to_thread(self._update_adaptive_profile_sync, profile_id, profile)
 
+    async def create_adaptive_profile(self, profile: dict[str, Any]) -> None:
+        await asyncio.to_thread(self._create_adaptive_profile_sync, profile)
+
     async def events(self) -> AsyncIterator[str]:
         ssl_context = ssl.create_default_context()
         ssl_context.check_hostname = False
@@ -96,6 +99,16 @@ class HttpDirigeraClient:
     def _update_adaptive_profile_sync(self, profile_id: str, profile: dict[str, Any]) -> None:
         response = self._session.put(
             f"{self._base_url}/adaptive-profiles/{profile_id}",
+            headers=self._headers,
+            json=profile,
+            timeout=10,
+            verify=False,
+        )
+        response.raise_for_status()
+
+    def _create_adaptive_profile_sync(self, profile: dict[str, Any]) -> None:
+        response = self._session.post(
+            f"{self._base_url}/adaptive-profiles",
             headers=self._headers,
             json=profile,
             timeout=10,
