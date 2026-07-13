@@ -36,6 +36,7 @@ section "Units"
 unit_line dirigera-readaptive.service
 unit_line dirigera-computed-schedule.service
 unit_line dirigera-computed-schedule.timer
+unit_line dirigera-panel.service
 
 section "Timer"
 systemctl list-timers --all dirigera-computed-schedule.timer --no-pager 2>/dev/null || true

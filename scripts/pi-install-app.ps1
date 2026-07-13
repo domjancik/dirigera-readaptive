@@ -40,6 +40,7 @@ Write-Host "Installing systemd units..."
 Invoke-Pi "sudo install -m 644 '$AppDir/systemd/dirigera-readaptive.service' /etc/systemd/system/dirigera-readaptive.service"
 Invoke-Pi "sudo install -m 644 '$AppDir/systemd/dirigera-computed-schedule.service' /etc/systemd/system/dirigera-computed-schedule.service"
 Invoke-Pi "sudo install -m 644 '$AppDir/systemd/dirigera-computed-schedule.timer' /etc/systemd/system/dirigera-computed-schedule.timer"
+Invoke-Pi "sudo install -m 644 '$AppDir/systemd/dirigera-panel.service' /etc/systemd/system/dirigera-panel.service"
 Invoke-Pi "sudo install -d -m 755 /etc/systemd/journald.conf.d"
 Invoke-Pi "sudo install -m 644 '$AppDir/systemd/dirigera-readaptive-journald.conf' /etc/systemd/journald.conf.d/dirigera-readaptive.conf"
 Invoke-Pi "sudo systemctl daemon-reload"
@@ -51,6 +52,8 @@ Invoke-Pi "mkdir -p '$RemoteBin' && install -m 755 '$AppDir/scripts/pi'/dirigera
 Write-Host "Enabling services..."
 Invoke-Pi "sudo systemctl enable dirigera-readaptive.service"
 Invoke-Pi "sudo systemctl enable dirigera-computed-schedule.timer"
+Invoke-Pi "sudo systemctl enable dirigera-panel.service"
+Invoke-Pi "sudo systemctl restart dirigera-panel.service"
 
 $tokenStatus = ssh $target "sudo test -s '$TokenPath'; echo `$?"
 if ($tokenStatus.Trim() -eq "0") {

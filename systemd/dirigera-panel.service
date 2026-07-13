@@ -1,0 +1,17 @@
+[Unit]
+Description=DIRIGERA ReAdaptive local control panel
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=piadmin
+Group=piadmin
+WorkingDirectory=/opt/dirigera-readaptive
+Environment=PYTHONPATH=/opt/dirigera-readaptive/src
+ExecStart=/opt/dirigera-readaptive/.venv/bin/python -m dirigera_readaptive.panel --config /opt/dirigera-readaptive/config.yaml --host 127.0.0.1 --port 8123
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

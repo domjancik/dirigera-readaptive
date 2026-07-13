@@ -59,8 +59,9 @@ pwsh -ExecutionPolicy Bypass -File .\scripts\pi-install-app.ps1 -PiHost 192.168.
 The installer clones or updates the public repo at `/opt/dirigera-readaptive`,
 creates `/opt/dirigera-readaptive/.venv`, installs Python dependencies, copies
 `config.rpi.example.yaml` to `config.yaml` if no config exists, installs the
-systemd units, and enables the daemon service and schedule timer. If the token
-file exists, it also starts the daemon, timer, and one immediate schedule update.
+systemd units, and enables the daemon service, schedule timer, and local control
+panel. If the token file exists, it also starts the daemon, timer, and one
+immediate schedule update.
 
 If installing units manually from `systemd/` to `/etc/systemd/system/`, run:
 
@@ -110,6 +111,22 @@ case must be covered, put the Pi and hub on a small UPS.
 `dirigera-status` reports `vcgencmd` temperature and throttle flags when the
 firmware command is available. A nonzero `get_throttled` result is worth
 investigating before relying on the Pi for unattended operation.
+
+## Control Panel
+
+The control panel edits the standard and dimmed profile brightness levels and
+summer day-extension settings, previews the resulting schedules, and applies
+them immediately to DIRIGERA. It also shows service, timer, disk, journal, and
+firmware health. It listens only on the Pi loopback interface at port `8123`.
+
+Open it through an SSH tunnel from a trusted computer:
+
+```powershell
+ssh -N -L 8123:127.0.0.1:8123 piadmin@192.168.1.250
+```
+
+Then open `http://127.0.0.1:8123` locally. Keep the SSH terminal open while
+using the panel.
 
 ## Status Scripts
 

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="panel-csrf" content="{{csrf_token}}">
+  <title>ReAdaptive Control</title>
+  <link rel="stylesheet" href="/panel.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark"></span><span>ReAdaptive</span></div>
+    <div class="topbar-actions">
+      <span class="updated" id="updated-at"></span>
+      <button class="button icon-button" id="refresh" type="button" title="Refresh status">Refresh</button>
+    </div>
+  </header>
+  <main>
+    <section class="status-band" aria-label="System status" id="status"></section>
+    <section class="workspace">
+      <aside class="profiles-panel">
+        <div class="section-label">Profiles</div>
+        <div class="profile-tabs" id="profile-tabs" role="tablist"></div>
+        <div class="action-stack">
+          <button class="button" id="reset" type="button">Discard changes</button>
+          <button class="button primary" id="save" type="button">Save &amp; apply now</button>
+        </div>
+      </aside>
+      <section class="controls-panel" aria-label="Profile controls">
+        <div class="panel-heading">
+          <div>
+            <div class="section-label">Editing</div>
+            <h1 id="profile-title"></h1>
+          </div>
+          <span class="change-state" id="change-state"></span>
+        </div>
+        <div class="control-group">
+          <h2>Light levels</h2>
+          <div id="level-controls"></div>
+        </div>
+        <div class="control-group extension-group">
+          <div class="control-title-row">
+            <h2>Summer extension</h2>
+            <label class="switch"><input id="extension-toggle" type="checkbox"><span></span></label>
+          </div>
+          <div id="extension-controls"></div>
+        </div>
+      </section>
+      <section class="preview-panel" aria-label="Adaptive schedule preview">
+        <div class="panel-heading preview-heading">
+          <div>
+            <div class="section-label">Today</div>
+            <h2 id="date-title"></h2>
+          </div>
+          <div class="legend"><span class="legend-light"></span>Light <span class="legend-temp"></span>Temperature</div>
+        </div>
+        <div class="canvas-frame"><canvas id="curve-canvas" aria-label="Brightness and color temperature over the day"></canvas></div>
+        <div class="sun-times" id="sun-times"></div>
+      </section>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="/panel.js"></script>
+</body>
+</html>

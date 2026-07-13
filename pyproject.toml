@@ -14,6 +14,7 @@ dirigera-readaptive = "dirigera_readaptive.cli:main"
 dirigera-schedule = "dirigera_readaptive.schedule_cli:main"
 dirigera-seasonal-schedule = "dirigera_readaptive.seasonal_cli:main"
 dirigera-schedule-profiles = "dirigera_readaptive.schedule_profiles_cli:main"
+dirigera-panel = "dirigera_readaptive.panel:main"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

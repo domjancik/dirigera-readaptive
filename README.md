@@ -81,6 +81,13 @@ brightness. Logs are written under `captures/` and are gitignored.
 They rotate at 25 MiB and retain 250 MiB of completed capture files by default;
 pass `-MaxTotalMb 0` only for a deliberately temporary, monitored capture.
 
+## Local Control Panel
+
+The Raspberry Pi installation includes a loopback-only web panel for adjusting
+the computed profile levels and summer extension, previewing the day curve, and
+checking service health. See [Raspberry Pi setup](docs/raspberry-pi.md#control-panel)
+for the SSH tunnel command.
+
 ## Adaptive Schedule Updates
 
 The hub accepts adaptive profile updates at:
