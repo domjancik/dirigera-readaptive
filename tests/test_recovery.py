@@ -51,7 +51,7 @@ def test_reachable_transition_reactivates_native_adaptive_for_on_light():
     asyncio.run(run())
 
 
-def test_new_last_seen_reactivates_adaptive_when_offline_event_was_missed():
+def test_heartbeat_last_seen_does_not_reactivate_adaptive():
     async def run():
         client = FakeClient(
             {
@@ -84,7 +84,7 @@ def test_new_last_seen_reactivates_adaptive_when_offline_event_was_missed():
             last_seen="2026-07-13T07:23:47.000Z",
         )
 
-        assert client.activations == [("light-1", "profile-1")]
+        assert client.activations == []
 
     asyncio.run(run())
 

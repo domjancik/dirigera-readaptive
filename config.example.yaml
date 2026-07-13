@@ -8,7 +8,7 @@ dirigera:
 watch_adaptive_on_lights: true
 lights: []
 
-poll_interval_seconds: 10
+poll_interval_seconds: 2
 activation_cooldown_seconds: 30
 recover_on_reconnect: true
 recover_on_power_on: false
