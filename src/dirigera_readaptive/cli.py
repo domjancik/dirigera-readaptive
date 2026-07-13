@@ -2,12 +2,20 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import logging
 from pathlib import Path
 
 from .client import HttpDirigeraClient
 from .config import load_config
 from .events import device_state_updates
 from .recovery import RecoveryDaemon
+
+
+def configure_logging() -> None:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
 
 
 async def run_daemon(config_path: Path) -> None:
@@ -105,6 +113,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    configure_logging()
     asyncio.run(run_daemon(args.config))
 
 

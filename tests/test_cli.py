@@ -1,7 +1,26 @@
 import asyncio
 import json
+import logging
 
 from dirigera_readaptive import cli
+
+
+def test_configure_logging_enables_info_audit_entries(monkeypatch):
+    calls = []
+
+    logging_module = getattr(cli, "logging", logging)
+    monkeypatch.setattr(logging_module, "basicConfig", lambda **kwargs: calls.append(kwargs))
+    configure_logging = getattr(cli, "configure_logging", None)
+
+    assert configure_logging is not None
+    configure_logging()
+
+    assert calls == [
+        {
+            "level": logging.INFO,
+            "format": "%(asctime)s %(levelname)s %(name)s: %(message)s",
+        }
+    ]
 
 
 def test_inventory_poll_discovers_adaptive_lights_and_seeds_device_state():
