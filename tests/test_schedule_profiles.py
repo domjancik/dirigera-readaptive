@@ -31,6 +31,7 @@ class FakeProfileClient:
         self.updates.append((profile_id, profile))
         for current in self.home["adaptiveProfiles"]:
             if current["id"] == profile_id:
+                current["name"] = profile["name"]
                 current["adaptiveSchedule"] = profile["adaptiveSchedule"]
 
 
@@ -47,11 +48,13 @@ schedule_updates:
   timezone: Europe/Prague
   profiles:
     - name: standard
+      profile_name: ReAdaptive
       profile_id: standard-profile
       output: {standard_output}
       curve:
         extend_day_after_late_sunset: true
     - name: dimmed
+      profile_name: ReAdaptive Dimmed
       profile_id: dimmed-profile
       output: {dimmed_output}
       curve:
@@ -70,6 +73,10 @@ schedule_updates:
 
     assert result == {"standard": True, "dimmed": True}
     assert [profile_id for profile_id, _ in client.updates] == ["standard-profile", "dimmed-profile"]
+    assert [profile["name"] for _, profile in client.updates] == [
+        "ReAdaptive 2024-06-08",
+        "ReAdaptive Dimmed 2024-06-08",
+    ]
     assert standard_output.exists()
     assert dimmed_output.exists()
     standard_schedule = client.updates[0][1]["adaptiveSchedule"]

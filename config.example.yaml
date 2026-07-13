@@ -20,11 +20,13 @@ schedule_updates:
   sample_minutes: 30
   profiles:
     - name: computed-standard
+      profile_name: ReAdaptive
       profile_id: 7bbebe49-41a3-48ea-8f5f-9e33a36dad87
       output: /opt/dirigera-readaptive/schedules/computed.yaml
       curve:
         extend_day_after_late_sunset: true
     - name: computed-dimmed
+      profile_name: ReAdaptive Dimmed
       profile_id: 8439ba57-ac80-4905-86c5-2acee72d26c5
       output: /opt/dirigera-readaptive/schedules/computed-dim.yaml
       curve:

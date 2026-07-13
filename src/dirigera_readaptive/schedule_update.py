@@ -30,17 +30,22 @@ async def update_profile_if_changed(
     client: ProfileClient,
     profile_id: str,
     schedule: list[ScheduleEntry],
+    profile_name: str | None = None,
 ) -> bool:
     desired_schedule = normalize_schedule(schedule)
     home = await client.get_home()
     current_profile = _find_profile(home, profile_id)
+    desired_name = profile_name or str(current_profile["name"])
 
-    if normalize_schedule(current_profile.get("adaptiveSchedule") or []) == desired_schedule:
+    if (
+        normalize_schedule(current_profile.get("adaptiveSchedule") or []) == desired_schedule
+        and current_profile.get("name") == desired_name
+    ):
         return False
 
     await client.update_adaptive_profile(
         profile_id,
-        build_profile_update(current_profile, desired_schedule),
+        build_profile_update(current_profile, desired_schedule, profile_name=desired_name),
     )
     return True
 
@@ -48,10 +53,11 @@ async def update_profile_if_changed(
 def build_profile_update(
     current_profile: dict[str, Any],
     schedule: list[ScheduleEntry],
+    profile_name: str | None = None,
 ) -> dict[str, Any]:
     return {
         "id": current_profile["id"],
-        "name": current_profile["name"],
+        "name": profile_name or current_profile["name"],
         "adaptiveSchedule": normalize_schedule(schedule),
     }
 

@@ -91,6 +91,34 @@ def test_update_profile_if_changed_skips_identical_schedule():
     asyncio.run(run())
 
 
+def test_update_profile_if_changed_renames_an_unchanged_schedule():
+    async def run():
+        schedule = [{"startTime": "20:00", "lightLevel": 81, "colorTemperature": 2000}]
+        client = FakeProfileClient(
+            {
+                "adaptiveProfiles": [
+                    {
+                        "id": "profile-1",
+                        "name": "Computed schedule",
+                        "adaptiveSchedule": schedule,
+                    }
+                ]
+            }
+        )
+
+        changed = await update_profile_if_changed(
+            client,
+            "profile-1",
+            schedule,
+            profile_name="ReAdaptive 2026-07-13",
+        )
+
+        assert changed is True
+        assert client.updates[0][1]["name"] == "ReAdaptive 2026-07-13"
+
+    asyncio.run(run())
+
+
 def test_load_schedule_file_reads_adaptive_schedule(tmp_path):
     path = tmp_path / "schedule.yaml"
     path.write_text(

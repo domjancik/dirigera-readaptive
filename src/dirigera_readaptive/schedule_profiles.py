@@ -19,6 +19,7 @@ from .seasonal_schedule import (
 @dataclass(frozen=True)
 class ScheduleProfileTarget:
     name: str
+    profile_name: str
     profile_id: str
     output: Path | None
     curve: CurveConfig
@@ -79,6 +80,7 @@ async def update_configured_profiles(
             client,
             target.profile_id,
             schedule,
+            profile_name=f"{target.profile_name} {config.target_date.isoformat()}",
         )
     return results
 
@@ -90,6 +92,7 @@ def _profile_target(raw: Any) -> ScheduleProfileTarget:
     output = raw.get("output")
     return ScheduleProfileTarget(
         name=str(raw["name"]),
+        profile_name=str(raw.get("profile_name", raw["name"])),
         profile_id=str(raw["profile_id"]),
         output=Path(str(output)) if output else None,
         curve=_curve_config(raw.get("curve") or {}),
