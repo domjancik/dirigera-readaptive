@@ -54,6 +54,7 @@ class RecoveryDaemon:
         self._sleep = sleep or asyncio.sleep
         self._reachable: dict[str, bool] = {}
         self._is_on: dict[str, bool] = {}
+        self._last_seen: dict[str, str] = {}
         self._last_activation_at: dict[str, float] = {}
 
     async def handle_reachability(self, device_id: str, is_reachable: bool) -> None:
@@ -86,17 +87,21 @@ class RecoveryDaemon:
         device_id: str,
         is_reachable: bool | None = None,
         is_on: bool | None = None,
+        last_seen: str | None = None,
     ) -> None:
         if device_id not in self._lights:
             return
 
         previous_reachable = self._reachable.get(device_id)
         previous_is_on = self._is_on.get(device_id)
+        previous_last_seen = self._last_seen.get(device_id)
 
         if is_reachable is not None:
             self._reachable[device_id] = is_reachable
         if is_on is not None:
             self._is_on[device_id] = is_on
+        if last_seen is not None:
+            self._last_seen[device_id] = last_seen
 
         reconnected = (
             self._recover_on_reconnect
@@ -108,7 +113,13 @@ class RecoveryDaemon:
             and previous_is_on is False
             and is_on is True
         )
-        if reconnected or powered_on:
+        reannounced = (
+            is_reachable is True
+            and previous_last_seen is not None
+            and last_seen is not None
+            and last_seen != previous_last_seen
+        )
+        if reconnected or powered_on or reannounced:
             await self._recover_light(device_id)
 
     async def poll_once(self) -> None:

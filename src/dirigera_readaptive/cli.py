@@ -43,15 +43,23 @@ async def _websocket_loop(client: HttpDirigeraClient, daemon: RecoveryDaemon) ->
     while True:
         try:
             async for message in client.events():
-                for device_id, state in device_state_updates(message):
-                    await daemon.handle_device_state(
-                        device_id,
-                        is_reachable=state.get("is_reachable"),
-                        is_on=state.get("is_on"),
-                    )
+                await _handle_websocket_message(message, daemon)
         except Exception as error:
             print(f"WebSocket listener failed: {error}. Reconnecting in 5 seconds.")
             await asyncio.sleep(5)
+
+
+async def _handle_websocket_message(message: str, daemon: RecoveryDaemon) -> None:
+    for device_id, state in device_state_updates(message):
+        is_reachable = state.get("is_reachable")
+        is_on = state.get("is_on")
+        last_seen = state.get("last_seen")
+        await daemon.handle_device_state(
+            device_id,
+            is_reachable=is_reachable if isinstance(is_reachable, bool) else None,
+            is_on=is_on if isinstance(is_on, bool) else None,
+            last_seen=last_seen if isinstance(last_seen, str) else None,
+        )
 
 
 async def _poll_inventory(client: HttpDirigeraClient, daemon: RecoveryDaemon) -> None:
@@ -66,6 +74,7 @@ async def _poll_inventory(client: HttpDirigeraClient, daemon: RecoveryDaemon) ->
             device_id,
             is_reachable=device.get("isReachable"),
             is_on=attributes.get("isOn"),
+            last_seen=device.get("lastSeen"),
         )
 
 

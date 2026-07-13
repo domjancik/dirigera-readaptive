@@ -37,3 +37,27 @@ def test_device_state_updates_include_is_on():
     assert device_state_updates(message) == [
         ("light-1", {"is_reachable": True, "is_on": True})
     ]
+
+
+def test_device_state_updates_include_last_seen_from_reachability_event():
+    message = json.dumps(
+        {
+            "type": "deviceStateChanged",
+            "data": {
+                "deviceType": "light",
+                "id": "light-1",
+                "isReachable": True,
+                "lastSeen": "2026-07-13T07:23:47.000Z",
+            },
+        }
+    )
+
+    assert device_state_updates(message) == [
+        (
+            "light-1",
+            {
+                "is_reachable": True,
+                "last_seen": "2026-07-13T07:23:47.000Z",
+            },
+        )
+    ]

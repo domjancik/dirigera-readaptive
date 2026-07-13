@@ -4,7 +4,7 @@ import json
 from typing import Any
 
 
-DeviceState = dict[str, bool]
+DeviceState = dict[str, bool | str]
 
 
 def reachability_updates(message: str) -> list[tuple[str, bool]]:
@@ -32,6 +32,8 @@ def _collect_device_state(value: Any, updates: list[tuple[str, DeviceState]]) ->
             state: DeviceState = {}
             if isinstance(value.get("isReachable"), bool):
                 state["is_reachable"] = value["isReachable"]
+            if isinstance(value.get("lastSeen"), str):
+                state["last_seen"] = value["lastSeen"]
             attributes = value.get("attributes") or {}
             if isinstance(attributes, dict) and isinstance(attributes.get("isOn"), bool):
                 state["is_on"] = attributes["isOn"]

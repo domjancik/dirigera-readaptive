@@ -51,6 +51,44 @@ def test_reachable_transition_reactivates_native_adaptive_for_on_light():
     asyncio.run(run())
 
 
+def test_new_last_seen_reactivates_adaptive_when_offline_event_was_missed():
+    async def run():
+        client = FakeClient(
+            {
+                "light-1": {
+                    "id": "light-1",
+                    "isReachable": True,
+                    "attributes": {"isOn": True},
+                    "adaptiveProfile": {},
+                }
+            }
+        )
+        daemon = RecoveryDaemon(
+            client=client,
+            lights=[LightConfig(id="light-1", adaptive_profile_id="profile-1", reconnect_delay_ms=0)],
+            cooldown_seconds=30,
+            now=lambda: 100.0,
+            sleep=lambda _: asyncio.sleep(0),
+        )
+
+        await daemon.handle_device_state(
+            "light-1",
+            is_reachable=True,
+            is_on=True,
+            last_seen="2026-07-13T07:20:00.000Z",
+        )
+        await daemon.handle_device_state(
+            "light-1",
+            is_reachable=True,
+            is_on=True,
+            last_seen="2026-07-13T07:23:47.000Z",
+        )
+
+        assert client.activations == [("light-1", "profile-1")]
+
+    asyncio.run(run())
+
+
 def test_recovery_writes_activation_to_journal_log(caplog):
     async def run():
         client = FakeClient(
