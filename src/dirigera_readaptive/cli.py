@@ -32,10 +32,7 @@ async def run_daemon(config_path: Path) -> None:
         recover_on_power_on=config.recover_on_power_on,
     )
 
-    if config.watch_adaptive_on_lights:
-        await _poll_inventory(client, daemon)
-    else:
-        await daemon.poll_once()
+    await _seed_initial_state(client, daemon, config.watch_adaptive_on_lights)
     await asyncio.gather(
         _websocket_loop(client, daemon),
         _poll_loop(
@@ -45,6 +42,20 @@ async def run_daemon(config_path: Path) -> None:
             config.watch_adaptive_on_lights,
         ),
     )
+
+
+async def _seed_initial_state(
+    client: HttpDirigeraClient,
+    daemon: RecoveryDaemon,
+    watch_adaptive_on_lights: bool,
+) -> None:
+    try:
+        if watch_adaptive_on_lights:
+            await _poll_inventory(client, daemon)
+        else:
+            await daemon.poll_once()
+    except Exception as error:
+        print(f"Initial inventory failed: {error}. Continuing with retries.")
 
 
 async def _websocket_loop(client: HttpDirigeraClient, daemon: RecoveryDaemon) -> None:

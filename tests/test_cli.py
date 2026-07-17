@@ -65,6 +65,24 @@ def test_inventory_poll_discovers_adaptive_lights_and_seeds_device_state():
     asyncio.run(run())
 
 
+def test_initial_seed_continues_when_hub_is_unavailable():
+    class OfflineClient:
+        async def get_devices(self):
+            raise ConnectionError("hub still starting")
+
+    class FakeDaemon:
+        async def poll_once(self):
+            raise AssertionError("dynamic inventory should be used")
+
+    async def run():
+        seed_initial_state = getattr(cli, "_seed_initial_state", None)
+
+        assert seed_initial_state is not None
+        await seed_initial_state(OfflineClient(), FakeDaemon(), watch_adaptive_on_lights=True)
+
+    asyncio.run(run())
+
+
 def test_websocket_message_forwards_last_seen_to_recovery_daemon():
     class FakeDaemon:
         def __init__(self):
