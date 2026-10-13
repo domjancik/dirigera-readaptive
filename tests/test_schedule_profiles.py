@@ -1,5 +1,6 @@
 import asyncio
 
+import dirigera_readaptive.schedule_profiles as schedule_profiles
 from dirigera_readaptive.schedule_profiles import (
     load_schedule_profiles_config,
     update_configured_profiles,
@@ -173,3 +174,56 @@ schedule_updates:
     assert second == {"standard": False}
     assert [profile["name"] for profile in client.created] == ["ReAdaptive 2024-06-08"]
     assert client.updates == []
+
+
+def test_profiles_wait_for_an_asynchronous_create_to_become_visible(tmp_path, monkeypatch):
+    class DelayedProvisioningClient:
+        def __init__(self):
+            self.home = {"adaptiveProfiles": []}
+            self.created = []
+            self.get_home_calls = 0
+
+        async def get_home(self):
+            self.get_home_calls += 1
+            if self.get_home_calls == 3:
+                profile = self.created[0]
+                self.home["adaptiveProfiles"].append(
+                    {
+                        "id": "delayed-profile",
+                        "name": profile["name"],
+                        "adaptiveSchedule": profile["adaptiveSchedule"],
+                    }
+                )
+            return self.home
+
+        async def create_adaptive_profile(self, profile):
+            self.created.append(profile)
+
+        async def update_adaptive_profile(self, profile_id, profile):
+            raise AssertionError("the newly created profile already has the target schedule")
+
+    async def no_wait(_seconds):
+        return None
+
+    monkeypatch.setattr(schedule_profiles.asyncio, "sleep", no_wait)
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        """
+schedule_updates:
+  date: 2024-06-08
+  latitude: 50.1
+  longitude: 14.5
+  timezone: Europe/Prague
+  profiles:
+    - name: late
+      profile_name: ReAdaptive Late
+      curve: {}
+""".strip(),
+        encoding="utf-8",
+    )
+
+    result = asyncio.run(
+        update_configured_profiles(DelayedProvisioningClient(), load_schedule_profiles_config(config_path))
+    )
+
+    assert result == {"late": True}

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass, fields
 from datetime import date
 from pathlib import Path
@@ -14,6 +15,10 @@ from .seasonal_schedule import (
     schedule_yaml_document,
     sun_times_for_date,
 )
+
+
+PROFILE_CREATE_VISIBILITY_ATTEMPTS = 5
+PROFILE_CREATE_VISIBILITY_DELAY_SECONDS = 1
 
 
 @dataclass(frozen=True)
@@ -128,11 +133,24 @@ async def _resolve_profile_id(
         raise ValueError("Profile client cannot create an adaptive profile.")
     await create_profile({"name": profile_name, "adaptiveSchedule": schedule})
 
-    home = await client.get_home()
-    matches = _matching_profiles(home, target.profile_name)
+    matches = await _wait_for_created_profile(client, target.profile_name)
     if len(matches) != 1:
         raise ValueError(f"Created adaptive profile {profile_name!r} was not found.")
     return str(matches[0]["id"]), True
+
+
+async def _wait_for_created_profile(
+    client: ProfileClient,
+    profile_name: str,
+) -> list[dict[str, Any]]:
+    for attempt in range(PROFILE_CREATE_VISIBILITY_ATTEMPTS):
+        home = await client.get_home()
+        matches = _matching_profiles(home, profile_name)
+        if matches:
+            return matches
+        if attempt < PROFILE_CREATE_VISIBILITY_ATTEMPTS - 1:
+            await asyncio.sleep(PROFILE_CREATE_VISIBILITY_DELAY_SECONDS)
+    return []
 
 
 def _matching_profiles(home: dict[str, Any], profile_name: str) -> list[dict[str, Any]]:
