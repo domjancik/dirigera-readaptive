@@ -31,6 +31,7 @@ class CurveConfig:
     latest_sleep_time: float = 23.0
     min_evening_ramp_hours: float = 1.5
     min_light_level: int = 10
+    day_min_light_level: int | None = None
     morning_light_level: int = 90
     evening_light_level: int = 55
     pre_sleep_light_level: int = 50
@@ -178,15 +179,17 @@ def sun_times_for_date(
 
 
 def _light_level_at(hour: float, sun_times: SunTimes, config: CurveConfig) -> float:
+    day_floor = config.day_min_light_level or config.min_light_level
     return _interpolate_anchors(
         hour,
         [
             (0.0, config.min_light_level),
-            (sun_times.sunrise, config.min_light_level),
-            (config.morning_transition_end(sun_times), config.morning_light_level),
-            (sun_times.solar_noon, config.max_light_level),
-            (config.evening_transition_start(sun_times), config.evening_light_level),
-            (config.effective_pre_sleep_time(sun_times), config.pre_sleep_light_level),
+            (sun_times.nautical_sunrise, config.min_light_level),
+            (sun_times.sunrise, day_floor),
+            (config.morning_transition_end(sun_times), max(config.morning_light_level, day_floor)),
+            (sun_times.solar_noon, max(config.max_light_level, day_floor)),
+            (config.evening_transition_start(sun_times), max(config.evening_light_level, day_floor)),
+            (config.effective_pre_sleep_time(sun_times), max(config.pre_sleep_light_level, day_floor)),
             (config.effective_sleep_time(sun_times), config.min_light_level),
         ],
     )

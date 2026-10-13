@@ -162,6 +162,11 @@ Operationally, keep two generated schedules: the normal/full-peak variant for
 the main adaptive profile, and a dimmed variant for lower-peak rooms by using a
 lower `--max-light-level` plus lower morning/evening/pre-sleep levels.
 
+For an evening-focused profile, `day_min_light_level` can keep a higher floor
+from sunrise through pre-sleep, while `min_light_level` remains the lower
+overnight floor. Set `sleep_time` and `pre_sleep_offset_hours` to control when
+the taper into the overnight level begins.
+
 The default generated profile now uses IKEA-like summer anchors: `10%` overnight,
 `2700K` around two hours after sunrise, `4600K` near solar noon, roughly
 `2450K` before sunset, `2200K` at pre-sleep, and `1000K` at sleep.

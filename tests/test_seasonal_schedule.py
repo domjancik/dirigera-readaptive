@@ -84,6 +84,26 @@ def test_evening_brightness_tapers_gradually_into_a_middle_ground():
     assert schedule_entry_at(23.0, times, config)["lightLevel"] == 10
 
 
+def test_day_floor_holds_until_pre_sleep_then_tapers_to_lower_night_floor():
+    times = SunTimes(nautical_sunrise=6.0, sunrise=7.0, solar_noon=12.0, sunset=16.0)
+    config = CurveConfig(
+        min_light_level=60,
+        day_min_light_level=70,
+        morning_light_level=100,
+        max_light_level=100,
+        evening_light_level=70,
+        pre_sleep_light_level=70,
+        sleep_time=22.0,
+        pre_sleep_offset_hours=1.5,
+    )
+
+    assert schedule_entry_at(7.0, times, config)["lightLevel"] == 70
+    assert schedule_entry_at(20.5, times, config)["lightLevel"] == 70
+    assert 60 < schedule_entry_at(21.0, times, config)["lightLevel"] < 70
+    assert schedule_entry_at(22.0, times, config)["lightLevel"] == 60
+    assert schedule_entry_at(2.0, times, config)["lightLevel"] == 60
+
+
 def test_prague_summer_evening_is_already_around_two_thirds_brightness():
     times = sun_times_for_date(
         date(2026, 7, 11),
